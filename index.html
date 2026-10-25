@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Карточки">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}*,*::before,*::after{box-sizing:border-box}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<title>Карточки EN · DE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#2747d0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<style>
+/* Layout: phone-first one-column app — header, scrolling view, bottom tab bar; capped at 36rem and centered on wide screens */
+:root{
+  --bg:#f2f3f6; --surface:#ffffff; --surface-2:#e8eaf0; --ink:#141922; --muted:#5b6476; --line:#d9dde6;
+  --en:#2747d0; --de:#8f6200; --accent:var(--en); --accent-ink:#ffffff;
+  --der:#2763d8; --die:#d22f48; --das:#16915a;
+  --good:#16915a; --hard:#b06e00; --bad:#d22f48;
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1117; --surface:#171b23; --surface-2:#222731; --ink:#e8ebf2; --muted:#98a1b3; --line:#2b313d;
+  --en:#86a1ff; --de:#f0bf2e; --accent-ink:#0e1117;
+  --der:#77a2ff; --die:#ff7085; --das:#43d08e; --good:#43d08e; --hard:#f0a530; --bad:#ff7085; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1117; --surface:#171b23; --surface-2:#222731; --ink:#e8ebf2; --muted:#98a1b3; --line:#2b313d;
+  --en:#86a1ff; --de:#f0bf2e; --accent-ink:#0e1117;
+  --der:#77a2ff; --die:#ff7085; --das:#43d08e; --good:#43d08e; --hard:#f0a530; --bad:#ff7085; color-scheme:dark}
+
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body[data-lang="de"]{--accent:var(--de)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#app{height:100%;max-width:36rem;margin:0 auto;display:grid;grid-template-rows:auto 1fr auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;padding-block:12px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:1rem;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;margin-right:auto;white-space:nowrap}
+.mark{width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:.62rem;letter-spacing:.02em}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:.85rem;padding:6px 12px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.streak{font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem;white-space:nowrap}
+.streak.on{color:var(--ink)}
+
+main{overflow-y:auto;min-height:0;padding-block:4px 20px;display:flex;flex-direction:column;gap:16px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);padding-block:4px}
+.tabs button{border:0;background:none;color:var(--muted);font-size:.72rem;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;cursor:pointer}
+.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{color:var(--accent)}
+
+/* type */
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.6rem;letter-spacing:-.02em}
+h2{font-family:var(--f-display);font-weight:500;font-size:1.1rem;letter-spacing:-.01em}
+.eyebrow,.tag{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+p{margin:0}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats3 div{display:flex;flex-direction:column}
+.stats3 b{font-family:var(--f-display);font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.stats3 span{font-size:.8rem;color:var(--muted)}
+.tip{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r);background:var(--surface-2);font-size:.92rem}
+.tip i{font-style:normal;font-size:1.2rem}
+
+/* buttons */
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:1rem;padding:13px 16px;border-radius:var(--r);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.ghost{background:transparent}
+.btn.block{width:100%}
+.btn.sm{font-size:.88rem;padding:8px 12px;border-radius:10px}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>.btn{flex:1 1 auto}
+
+/* study card */
+.sess-top{display:flex;align-items:center;gap:12px}
+.x{border:0;background:var(--surface-2);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1rem;flex:none}
+.bar{flex:1;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.cnt{font-variant-numeric:tabular-nums;font-size:.85rem;color:var(--muted);min-width:3.5em;text-align:right}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;min-height:290px;justify-content:center}
+.pic{font-size:4.6rem;line-height:1.05}
+.pic img{width:150px;height:150px;object-fit:cover;border-radius:18px;display:block}
+.word{font-size:clamp(1.7rem,8vw,2.4rem);font-weight:700;letter-spacing:-.01em;line-height:1.15;overflow-wrap:anywhere;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.ru{font-size:1.45rem;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.ex{color:var(--muted);font-style:italic;max-width:32ch}
+.divider{width:48px;height:2px;border-radius:2px;background:var(--line)}
+.art{font-size:.5em;font-weight:700;padding:3px 9px;border-radius:999px;border:2px solid currentColor;line-height:1.2;letter-spacing:.02em}
+.g-der{color:var(--der)} .g-die{color:var(--die)} .g-das{color:var(--das)}
+.say{border:0;background:var(--surface-2);color:var(--ink);width:44px;height:44px;border-radius:50%;cursor:pointer;display:inline-grid;place-items:center;flex:none}
+.say svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.say.sm{width:34px;height:34px}.say.sm svg{width:16px;height:16px}
+.grades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grades .btn{flex-direction:column;gap:2px;padding:11px 6px;font-size:.95rem}
+.grades small{font-weight:500;font-size:.72rem;color:var(--muted)}
+.gb-again{border-color:color-mix(in srgb,var(--bad) 45%,var(--line));background:color-mix(in srgb,var(--bad) 9%,var(--surface))}
+.gb-hard{border-color:color-mix(in srgb,var(--hard) 45%,var(--line));background:color-mix(in srgb,var(--hard) 9%,var(--surface))}
+.gb-good{border-color:color-mix(in srgb,var(--good) 45%,var(--line));background:color-mix(in srgb,var(--good) 9%,var(--surface))}
+.opts{display:grid;gap:8px}
+.opt{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px 16px;text-align:left;font-weight:600;font-size:1.05rem;cursor:pointer;overflow-wrap:anywhere}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.opt:disabled{cursor:default;color:var(--ink)}
+.typed{display:flex;gap:8px}
+.typed .input{flex:1}
+.input{min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:13px 14px;font-size:1.1rem}
+textarea.input{font-size:.95rem;resize:vertical;min-height:7rem;font-family:ui-monospace,"SFMono-Regular",Consolas,monospace}
+.keys{display:flex;gap:6px}
+.keys button{border:1px solid var(--line);background:var(--surface);border-radius:10px;width:42px;height:38px;font-weight:600;cursor:pointer}
+.fb{border-radius:var(--r);padding:12px 14px;font-weight:600}
+.fb.ok{background:color-mix(in srgb,var(--good) 14%,var(--surface));color:var(--good)}
+.fb.hard{background:color-mix(in srgb,var(--hard) 14%,var(--surface));color:var(--hard)}
+.fb.bad{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad)}
+.fb span{display:block;color:var(--ink);font-weight:500;font-size:.92rem;margin-top:2px}
+
+/* onboarding */
+.choice{display:grid;gap:10px}
+.choice button{display:flex;align-items:center;gap:14px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:18px;padding:16px;cursor:pointer}
+.choice b{font-family:var(--f-display);font-size:1.05rem;font-weight:700;display:block}
+.choice .flag{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:.8rem;flex:none;color:#fff}
+.flag.en{background:#2747d0}.flag.de{background:#1b1b1b;box-shadow:inset 0 -10px 0 #f0bf2e,inset 0 -20px 0 #d22f48}
+
+/* words list */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--muted)}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.li{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;cursor:pointer;width:100%}
+.li:last-child{border-bottom:0}
+.li .em{font-size:1.6rem;text-align:center}
+.li .em img{width:36px;height:36px;border-radius:8px;object-fit:cover;display:block}
+.li .t{min-width:0}
+.li .t b{display:block;font-weight:600;overflow-wrap:anywhere}
+.li .t>span{font-size:.88rem;color:var(--muted);overflow-wrap:anywhere}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dot.learning{background:var(--hard)}.dot.known{background:var(--good)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+
+/* stats */
+.lvl{display:flex;flex-direction:column;gap:6px}
+.lvl-h{display:flex;justify-content:space-between;font-size:.9rem;font-variant-numeric:tabular-nums}
+.stack{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--surface-2)}
+.stack i{display:block;height:100%}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:120px}
+.week div{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.week .b{width:100%;max-width:28px;border-radius:6px 6px 2px 2px;background:var(--accent);min-height:2px}
+.week .b.zero{background:var(--surface-2)}
+.week small{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.week .today small{color:var(--ink);font-weight:700}
+
+/* settings */
+.set{display:flex;flex-direction:column;gap:8px}
+.set label{font-weight:600}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sw{appearance:none;width:48px;height:28px;border-radius:99px;background:var(--surface-2);position:relative;cursor:pointer;flex:none;border:1px solid var(--line)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s}
+.sw:checked{background:var(--accent)}.sw:checked::after{transform:translateX(20px)}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:5px}
+.preview{font-size:.88rem;display:flex;flex-direction:column;gap:4px;max-height:12rem;overflow:auto}
+.preview div{display:flex;gap:8px}.preview div b{font-weight:600}
+
+/* sheet + toast */
+.sheet-bg{position:fixed;inset:0;background:rgba(10,12,18,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:36rem;max-height:88%;overflow-y:auto;border-radius:22px 22px 0 0;display:flex;flex-direction:column;gap:14px;
+  padding-top:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:.9rem;z-index:30;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.pop{animation:pop .25s ease-out}
+@keyframes pop{from{transform:translateY(6px);opacity:.4}to{transform:none;opacity:1}}
+</style>
+
+<div id="app">
+  <header class="top" id="top"></header>
+  <main id="view"></main>
+  <nav class="tabs" id="tabs"></nav>
+</div>
+<div id="sheet"></div>
+<div id="toast" class="toast" hidden></div>
+<input type="file" id="photo-input" accept="image/*" hidden>
+<input type="file" id="list-file" accept=".txt,.csv,.tsv,text/plain,text/csv" hidden>
+<input type="file" id="import-file" accept=".json,application/json" hidden>
+
+<script>
+/* ---------- словарь: слово | перевод | картинка | пример ---------- */
+const RAW = {
+en: {
+A1: `apple|яблоко|🍎|I eat an apple every day.
+bread|хлеб|🍞|We need some bread.
+water|вода|💧|Can I have some water, please?
+milk|молоко|🥛|The milk is in the fridge.
+cat|кошка|🐈|My cat sleeps all day.
+dog|собака|🐕|The dog is in the garden.
+house|дом|🏠|They live in a big house.
+school|школа|🏫|School starts at eight.
+book|книга|📕|This book is really good.
+pen|ручка|🖊️|Can I borrow your pen?
+teacher|учитель|🧑‍🏫|Our teacher is very kind.
+friend|друг|🧑‍🤝‍🧑|She is my best friend.
+family|семья|👨‍👩‍👧|I have a small family.
+mother|мама, мать|👩|My mother is a doctor.
+father|папа, отец|👨|My father works in a bank.
+brother|брат|👦|My brother is twelve.
+sister|сестра|👧|My sister likes music.
+car|машина|🚗|Dad washes the car on Sundays.
+bus|автобус|🚌|I go to school by bus.
+sun|солнце|☀️|The sun is shining.
+rain|дождь|🌧️|I don't like rain.
+tree|дерево|🌳|There is a tree in our yard.
+flower|цветок|🌸|She gave me a flower.
+phone|телефон|📱|My phone is on the table.
+table|стол||Put the cups on the table.
+chair|стул|🪑|Sit on this chair.
+window|окно|🪟|Open the window, please.
+door|дверь|🚪|Close the door.
+day|день||Have a nice day!
+night|ночь|🌙|Good night!
+red|красный|🔴|I have a red bike.
+big|большой||It's a big city.
+small|маленький||The room is small.
+happy|счастливый|😊|I'm happy today.
+cold|холодный|🥶|It's cold outside.
+hot|горячий, жаркий|🔥|The tea is hot.
+eat|есть (кушать)|🍽️|We eat dinner at seven.
+drink|пить|🥤|Drink some water.
+sleep|спать|😴|I sleep eight hours.
+read|читать|📖|I like to read.
+write|писать|✍️|Write your name here.
+run|бегать|🏃|I run in the park.
+swim|плавать|🏊|Can you swim?
+go|идти, ехать||Let's go home.
+like|нравиться, любить|👍|I like pizza.
+help|помогать||Can you help me?
+money|деньги|💰|I have no money.
+time|время|⏰|What time is it?
+music|музыка|🎵|I listen to music.
+ball|мяч|⚽|Kick the ball!`,
+A2: `weather|погода|🌦️|The weather is nice today.
+holiday|каникулы, отпуск|🏖️|We went to the sea on holiday.
+journey|поездка, путешествие|🧳|The journey took five hours.
+ticket|билет|🎫|I bought a train ticket.
+station|станция, вокзал|🚉|Meet me at the station.
+airport|аэропорт|✈️|The airport is far from the city.
+luggage|багаж|🧳|Don't forget your luggage.
+map|карта (местности)|🗺️|Look at the map.
+bridge|мост|🌉|We walked across the bridge.
+village|деревня|🏡|My grandma lives in a village.
+neighbour|сосед|🏘️|Our neighbour has a dog.
+kitchen|кухня|🍳|Mum is cooking in the kitchen.
+vegetables|овощи|🥕|Eat more vegetables.
+cheese|сыр|🧀|I like cheese sandwiches.
+meal|еда, приём пищи|🍲|Breakfast is my favourite meal.
+headache|головная боль|🤕|I have a headache.
+medicine|лекарство|💊|Take this medicine twice a day.
+healthy|здоровый, полезный|🥗|Fruit is healthy.
+subject|школьный предмет|📚|Maths is my favourite subject.
+homework|домашнее задание|📝|I do my homework after school.
+exam|экзамен||I passed the exam!
+lesson|урок||The lesson was boring.
+mistake|ошибка|❌|Everyone makes mistakes.
+hobby|хобби|🎨|My hobby is drawing.
+team|команда|🏆|Our team won the match.
+match|матч|🏟️|We watched the football match.
+competition|соревнование, конкурс|🥇|She won the competition.
+clothes|одежда|👕|I need new clothes.
+shoes|обувь, туфли|👟|These shoes are too small.
+umbrella|зонт|☂️|Take an umbrella, it's raining.
+cloud|облако|☁️|There isn't a cloud in the sky.
+snow|снег|❄️|The kids play in the snow.
+island|остров|🏝️|They live on an island.
+mountain|гора|⛰️|We climbed a mountain.
+river|река|🏞️|The river is very long.
+forest|лес|🌲|Don't get lost in the forest.
+animal|животное|🦊|What's your favourite animal?
+bird|птица|🐦|A bird is singing.
+famous|знаменитый|⭐|He's a famous singer.
+expensive|дорогой (о цене)|💸|This phone is expensive.
+cheap|дешёвый||The tickets were cheap.
+dangerous|опасный|⚠️|It's dangerous to swim here.
+boring|скучный|🥱|The film was boring.
+interesting|интересный||What an interesting book!
+tired|уставший|😩|I'm tired after school.
+angry|злой, сердитый|😠|Why are you angry?
+afraid|испуганный (be afraid — бояться)|😨|I'm afraid of spiders.
+borrow|брать взаймы||Can I borrow your pen?
+forget|забывать||Don't forget your keys.
+remember|помнить||I remember your name.
+travel|путешествовать|🌍|I want to travel around the world.
+choose|выбирать||Choose one answer.
+win|выигрывать|🏆|We always win!
+lose|терять, проигрывать||I lost my keys.
+arrive|прибывать, приезжать||The train arrives at six.
+invite|приглашать|💌|I invite you to my party.
+prefer|предпочитать||I prefer tea to coffee.
+believe|верить||I believe you.
+magazine|журнал (не «магазин»!)|📰|I read a magazine about cars.
+actually|на самом деле (не «актуально»!)||Actually, I don't like it.`,
+B1: `environment|окружающая среда|🌍|We must protect the environment.
+pollution|загрязнение|🏭|Air pollution is a big problem.
+recycle|перерабатывать (отходы)|♻️|We recycle plastic bottles.
+waste|отходы; тратить впустую|🗑️|Don't waste water.
+climate|климат|🌡️|The climate is changing.
+energy|энергия|⚡|Solar energy is clean.
+resource|ресурс||Water is a natural resource.
+species|вид (животных, растений)|🐼|Many species are in danger.
+disappear|исчезать||Forests are disappearing.
+protect|защищать|🛡️|Helmets protect your head.
+experience|опыт; впечатление||It was an amazing experience.
+opportunity|возможность||This is a great opportunity.
+advantage|преимущество|➕|Living in a city has advantages.
+disadvantage|недостаток|➖|What are the disadvantages?
+opinion|мнение|💬|In my opinion, it's wrong.
+advice|совет|💡|Can you give me some advice?
+decision|решение||It was a difficult decision.
+decide|решать||I decided to learn German.
+achieve|достигать|🎯|You can achieve your goals.
+improve|улучшать|📈|I want to improve my English.
+succeed|добиться успеха||If you work hard, you'll succeed.
+fail|потерпеть неудачу, провалить||He failed the test.
+behaviour|поведение||His behaviour was strange.
+relationship|отношения|❤️|They have a good relationship.
+argue|спорить, ссориться|🗣️|My parents never argue.
+apologise|извиняться|🙏|You should apologise.
+trust|доверять|🤝|I trust my friends.
+lonely|одинокий||She felt lonely.
+confident|уверенный в себе|💪|Be confident!
+responsible|ответственный||You're responsible for your dog.
+patient|терпеливый; пациент||Be patient, please.
+generous|щедрый|🎁|He's very generous.
+honest|честный||Tell me the honest answer.
+although|хотя||Although it was cold, we went out.
+however|однако||It's cheap. However, it's ugly.
+therefore|поэтому, следовательно||I was ill, therefore I stayed at home.
+especially|особенно||I love fruit, especially apples.
+probably|вероятно||It will probably rain.
+suddenly|внезапно|⚡|Suddenly the lights went out.
+career|карьера|💼|She wants a career in science.
+salary|зарплата|💵|He has a good salary.
+employee|сотрудник||The company has 50 employees.
+interview|собеседование, интервью|🎤|I have a job interview.
+skill|навык|🛠️|Communication is an important skill.
+knowledge|знание, знания|🧠|Knowledge is power.
+research|исследование|🔬|Scientists do research.
+device|устройство|📱|Turn off all devices.
+screen|экран|🖥️|Don't look at the screen too long.
+download|скачивать|⬇️|Download the app.
+password|пароль|🔑|Never share your password.
+advertisement|реклама, объявление|📢|I hate advertisements on YouTube.
+news|новости|📰|Did you hear the news?
+increase|увеличивать(ся)|📈|Prices increase every year.
+reduce|уменьшать, сокращать|📉|Reduce your screen time.
+avoid|избегать||Avoid junk food.
+require|требовать||This job requires experience.
+fit|подходить по размеру; в форме||These jeans don't fit me.
+sympathetic|сочувствующий (не «симпатичный»!)||She was very sympathetic.
+accurate|точный (не «аккуратный»!)|🎯|The data is accurate.
+fabric|ткань (не «фабрика»!)|🧵|This fabric is soft.`,
+B2: `approach|подход||We need a new approach.
+consequence|последствие||Think about the consequences.
+evidence|доказательство, улики|🔍|There is no evidence.
+issue|вопрос, проблема||It's a serious issue.
+significant|значительный||It was a significant change.
+reliable|надёжный||My bike is very reliable.
+sustainable|устойчивый, экологичный|🌱|We need sustainable energy.
+efficient|эффективный||This car is very efficient.
+inevitable|неизбежный||Change is inevitable.
+reluctant|неохотный||He was reluctant to help.
+overcome|преодолевать|🧗|She overcame her fear.
+encourage|поощрять, вдохновлять|👏|My parents encourage me.
+persuade|убеждать||He persuaded me to come.
+emphasise|подчёркивать||She emphasised the main idea.
+estimate|оценивать (примерно)||I estimate it will cost fifty pounds.
+contribute|вносить вклад||Everyone contributed to the project.
+maintain|поддерживать, сохранять||Maintain a healthy lifestyle.
+determine|определять||Genes determine eye colour.
+acquire|приобретать||She acquired new skills.
+deny|отрицать||He denied everything.
+threat|угроза|⚠️|Climate change is a threat.
+burden|бремя, ноша||I don't want to be a burden.
+awareness|осознание, осведомлённость||We want to raise awareness about plastic.
+achievement|достижение|🏅|It's a great achievement.
+attitude|отношение, позиция||She has a positive attitude.
+appearance|внешность||Don't judge by appearance.
+outcome|результат, исход||The outcome was positive.
+purpose|цель, назначение||What's the purpose of this?
+rely on|полагаться на||You can rely on me.
+cope with|справляться с||How do you cope with stress?
+take part in|принимать участие в|🙋|I took part in the race.
+look forward to|ждать с нетерпением||I look forward to the holidays.
+give up|бросать, сдаваться|🏳️|Never give up!
+deal with|иметь дело с, решать||I'll deal with it.
+frankly|откровенно говоря||Frankly, I don't care.
+nevertheless|тем не менее||It was hard; nevertheless, we won.
+whereas|тогда как||I like tea, whereas she likes coffee.
+eventually|в конце концов (не «эвентуально»!)||Eventually, we found the way.
+realise|осознавать||I realised I was wrong.
+complain|жаловаться||Stop complaining!`
+},
+de: {
+A1: `der Hund|собака|🐕|Der Hund spielt im Garten.
+die Katze|кошка|🐈|Die Katze schläft.
+das Haus|дом|🏠|Das Haus ist groß.
+die Schule|школа|🏫|Die Schule beginnt um acht.
+das Buch|книга|📕|Das Buch ist spannend.
+der Stift|ручка, карандаш|🖊️|Hast du einen Stift?
+der Lehrer|учитель|🧑‍🏫|Der Lehrer ist nett.
+die Lehrerin|учительница|👩‍🏫|Die Lehrerin heißt Frau Weber.
+der Freund|друг|🧑‍🤝‍🧑|Er ist mein bester Freund.
+die Familie|семья|👨‍👩‍👧|Meine Familie ist groß.
+die Mutter|мать, мама|👩|Meine Mutter kocht gern.
+der Vater|отец, папа|👨|Mein Vater arbeitet viel.
+der Bruder|брат|👦|Mein Bruder ist zehn.
+die Schwester|сестра|👧|Meine Schwester tanzt.
+das Auto|машина|🚗|Das Auto ist rot.
+der Bus|автобус|🚌|Ich fahre mit dem Bus.
+die Sonne|солнце|☀️|Die Sonne scheint.
+der Regen|дождь|🌧️|Ich mag keinen Regen.
+der Baum|дерево|🌳|Der Baum ist alt.
+die Blume|цветок|🌸|Die Blume ist schön.
+das Handy|мобильный телефон|📱|Mein Handy ist kaputt.
+der Tisch|стол||Das Buch liegt auf dem Tisch.
+der Stuhl|стул|🪑|Der Stuhl ist bequem.
+das Fenster|окно|🪟|Mach bitte das Fenster auf.
+die Tür|дверь|🚪|Die Tür ist zu.
+der Apfel|яблоко|🍎|Ich esse einen Apfel.
+das Brot|хлеб|🍞|Das Brot ist frisch.
+das Wasser|вода|💧|Ein Glas Wasser, bitte.
+die Milch|молоко|🥛|Die Milch ist kalt.
+der Käse|сыр|🧀|Ich esse gern Käse.
+das Ei|яйцо|🥚|Zum Frühstück esse ich ein Ei.
+der Tag|день||Guten Tag!
+die Nacht|ночь|🌙|Gute Nacht!
+die Woche|неделя|📅|Die Woche hat sieben Tage.
+das Jahr|год||Ich bin vierzehn Jahre alt.
+die Stadt|город|🏙️|Berlin ist eine große Stadt.
+das Zimmer|комната|🛏️|Mein Zimmer ist klein.
+der Ball|мяч|⚽|Wir spielen Ball.
+das Geld|деньги|💰|Ich habe kein Geld.
+die Uhr|часы|⏰|Die Uhr ist neu.
+groß|большой||Mein Bruder ist groß.
+klein|маленький||Die Katze ist klein.
+gut|хороший, хорошо|👍|Das ist gut!
+schön|красивый||Das Wetter ist schön.
+kalt|холодный|🥶|Heute ist es kalt.
+warm|тёплый||Der Tee ist warm.
+neu|новый||Ich habe ein neues Fahrrad.
+alt|старый||Das Haus ist alt.
+rot|красный|🔴|Die Tomate ist rot.
+essen|есть (кушать)|🍽️|Wir essen um sieben.
+trinken|пить|🥤|Ich trinke Wasser.
+schlafen|спать|😴|Das Baby schläft.
+lesen|читать|📖|Ich lese gern.
+schreiben|писать|✍️|Schreib deinen Namen.
+spielen|играть|🎮|Wir spielen Fußball.
+wohnen|жить (проживать)|🏠|Ich wohne in Moskau.
+kommen|приходить, приезжать||Woher kommst du?
+gehen|идти||Ich gehe nach Hause.
+machen|делать||Was machst du?
+lernen|учить, учиться|📚|Ich lerne Deutsch.`,
+A2: `das Wetter|погода|🌦️|Wie ist das Wetter?
+die Ferien|каникулы (мн. ч.)|🏖️|In den Ferien fahre ich ans Meer.
+die Reise|поездка, путешествие|🧳|Gute Reise!
+die Fahrkarte|билет (на транспорт)|🎫|Ich kaufe eine Fahrkarte.
+der Bahnhof|вокзал|🚉|Wir treffen uns am Bahnhof.
+der Flughafen|аэропорт|✈️|Der Flughafen ist weit weg.
+der Koffer|чемодан|🧳|Mein Koffer ist schwer.
+die Brücke|мост|🌉|Die Brücke ist lang.
+das Dorf|деревня|🏡|Oma wohnt in einem Dorf.
+der Nachbar|сосед|🏘️|Unser Nachbar ist nett.
+die Küche|кухня|🍳|Mama ist in der Küche.
+das Gemüse|овощи|🥕|Gemüse ist gesund.
+das Obst|фрукты|🍇|Ich esse viel Obst.
+das Frühstück|завтрак|🥐|Das Frühstück ist fertig.
+der Kopf|голова||Mein Kopf tut weh.
+die Kopfschmerzen|головная боль (мн. ч.)|🤕|Ich habe Kopfschmerzen.
+der Arzt|врач|🩺|Ich gehe zum Arzt.
+gesund|здоровый, полезный|🥗|Sport ist gesund.
+krank|больной|🤒|Ich bin krank.
+das Fach|школьный предмет|📚|Mathe ist mein Lieblingsfach.
+die Hausaufgabe|домашнее задание|📝|Ich mache meine Hausaufgaben.
+die Prüfung|экзамен||Die Prüfung war schwer.
+der Fehler|ошибка|❌|Jeder macht Fehler.
+das Hobby|хобби|🎨|Mein Hobby ist Malen.
+die Mannschaft|команда|🏆|Unsere Mannschaft hat gewonnen.
+das Spiel|игра, матч|🏟️|Das Spiel beginnt um drei.
+die Kleidung|одежда|👕|Ich brauche neue Kleidung.
+die Schuhe|обувь (мн. ч.)|👟|Die Schuhe sind zu klein.
+der Regenschirm|зонт|☂️|Nimm einen Regenschirm mit.
+die Wolke|облако|☁️|Am Himmel sind Wolken.
+der Schnee|снег|❄️|Die Kinder spielen im Schnee.
+die Insel|остров|🏝️|Wir fahren auf eine Insel.
+der Berg|гора|⛰️|Der Berg ist hoch.
+der Fluss|река|🏞️|Der Rhein ist ein Fluss.
+der Wald|лес|🌲|Wir gehen im Wald spazieren.
+das Tier|животное|🦊|Mein Lieblingstier ist der Fuchs.
+der Vogel|птица|🐦|Der Vogel singt.
+berühmt|знаменитый|⭐|Er ist ein berühmter Sänger.
+teuer|дорогой (о цене)|💸|Das Handy ist teuer.
+billig|дешёвый||Die Karten waren billig.
+gefährlich|опасный|⚠️|Das ist gefährlich!
+langweilig|скучный|🥱|Der Film war langweilig.
+interessant|интересный||Das Buch ist interessant.
+müde|уставший|😩|Ich bin müde.
+wütend|злой, сердитый|😠|Warum bist du wütend?
+vergessen|забывать||Vergiss deine Schlüssel nicht!
+sich erinnern|вспоминать, помнить||Ich erinnere mich an dich.
+reisen|путешествовать|🌍|Ich reise gern.
+wählen|выбирать||Wähle eine Antwort.
+gewinnen|выигрывать|🏆|Wir gewinnen immer!
+verlieren|терять, проигрывать||Ich habe meinen Schlüssel verloren.
+ankommen|прибывать||Der Zug kommt um sechs an.
+einladen|приглашать|💌|Ich lade dich ein.
+glauben|верить, думать||Ich glaube dir.
+helfen|помогать||Kannst du mir helfen?
+kaufen|покупать|🛒|Ich kaufe Brot.
+brauchen|нуждаться||Ich brauche Hilfe.
+das Gymnasium|гимназия (не «спортзал»!)|🏫|Ich gehe aufs Gymnasium.
+die Zeitung|газета|📰|Opa liest die Zeitung.
+bekommen|получать (не «становиться»!)|🎁|Ich bekomme ein Geschenk.`,
+B1: `die Umwelt|окружающая среда|🌍|Wir müssen die Umwelt schützen.
+die Verschmutzung|загрязнение|🏭|Die Verschmutzung der Luft ist ein Problem.
+der Müll|мусор|🗑️|Wir trennen den Müll.
+die Energie|энергия|⚡|Sonnenenergie ist sauber.
+das Klima|климат|🌡️|Das Klima ändert sich.
+schützen|защищать|🛡️|Der Helm schützt den Kopf.
+die Erfahrung|опыт||Das war eine tolle Erfahrung.
+die Möglichkeit|возможность||Das ist eine gute Möglichkeit.
+der Vorteil|преимущество|➕|Das hat viele Vorteile.
+der Nachteil|недостаток|➖|Was sind die Nachteile?
+die Meinung|мнение|💬|Meiner Meinung nach ist das falsch.
+der Rat|совет|💡|Kannst du mir einen Rat geben?
+die Entscheidung|решение||Das war eine schwere Entscheidung.
+entscheiden|решать||Ich muss mich entscheiden.
+erreichen|достигать|🎯|Du kannst dein Ziel erreichen.
+verbessern|улучшать|📈|Ich will mein Deutsch verbessern.
+das Ziel|цель|🎯|Mein Ziel ist das Abitur.
+das Verhalten|поведение||Sein Verhalten war komisch.
+die Beziehung|отношения|❤️|Sie haben eine gute Beziehung.
+streiten|ссориться, спорить|🗣️|Meine Eltern streiten nie.
+sich entschuldigen|извиняться|🙏|Du solltest dich entschuldigen.
+vertrauen|доверять|🤝|Ich vertraue meinen Freunden.
+einsam|одинокий||Sie fühlte sich einsam.
+selbstbewusst|уверенный в себе|💪|Sei selbstbewusst!
+verantwortlich|ответственный||Du bist für den Hund verantwortlich.
+geduldig|терпеливый||Sei bitte geduldig.
+ehrlich|честный||Sei ehrlich!
+obwohl|хотя||Obwohl es kalt war, gingen wir raus.
+deshalb|поэтому||Ich war krank, deshalb blieb ich zu Hause.
+trotzdem|тем не менее, всё равно||Es regnet. Trotzdem gehen wir.
+besonders|особенно||Ich mag Obst, besonders Äpfel.
+wahrscheinlich|вероятно||Morgen regnet es wahrscheinlich.
+plötzlich|внезапно|⚡|Plötzlich ging das Licht aus.
+der Beruf|профессия|💼|Was ist dein Traumberuf?
+das Gehalt|зарплата|💵|Er hat ein gutes Gehalt.
+die Fähigkeit|способность, навык|🛠️|Das ist eine wichtige Fähigkeit.
+das Wissen|знания|🧠|Wissen ist Macht.
+die Forschung|исследование|🔬|Die Forschung ist teuer.
+das Gerät|прибор, устройство|📱|Schalte alle Geräte aus.
+der Bildschirm|экран|🖥️|Schau nicht so lange auf den Bildschirm.
+herunterladen|скачивать|⬇️|Lade die App herunter.
+das Passwort|пароль|🔑|Teile nie dein Passwort.
+die Werbung|реклама|📢|Ich hasse Werbung.
+die Nachrichten|новости (мн. ч.)|📰|Hast du die Nachrichten gehört?
+steigen|расти, подниматься|📈|Die Preise steigen.
+vermeiden|избегать||Vermeide Fast Food.
+die Gesellschaft|общество||Die Gesellschaft verändert sich.
+der Unterschied|разница|⚖️|Was ist der Unterschied?
+sich vorstellen|представлять(ся)||Darf ich mich vorstellen?
+eventuell|возможно (не «в конце концов»!)||Eventuell komme ich später.`
+}};
+
+const LEVELS = {en:['A1','A2','B1','B2'], de:['A1','A2','B1']};
+const LANG_NAME = {en:'English', de:'Deutsch'};
+const LANG_TO = {en:'по-английски', de:'по-немецки'};
+const DAY = 864e5, INT = [0,1,2,4,7,14,30,60], KNOWN = 5;
+const TIPS = [
+  ['🗣️','Произноси слово вслух, когда отвечаешь. Память цепляется и за звук, и за движение губ.'],
+  ['⏱️','10 минут каждый день работают лучше, чем час раз в неделю.'],
+  ['🔁','Ошибся — нормально. Слово просто вернётся чуть раньше.'],
+  ['📷','Сфотографируй что-то к трудному слову. Своя картинка запоминается лучше чужой.'],
+  ['🎨','Немецкие артикли учи вместе со словом: не Hund, а der Hund. Цвет подскажет род.'],
+  ['✍️','Придумай с новым словом фразу про себя или друзей.'],
+  ['🌙','Повторение перед сном помогает словам закрепиться.']
+];
+
+const BUILT = {};
+for (const lang of ['en','de']) {
+  BUILT[lang] = [];
+  for (const lv of LEVELS[lang]) for (const line of RAW[lang][lv].split('\n')) {
+    const [w,ru,em,ex] = line.split('|').map(s => (s||'').trim());
+    if (w) BUILT[lang].push({id:w, w, ru, em, ex, lv});
+  }
+}
+
+/* ---------- хранение ---------- */
+const KEY = 'kartochki.v1';
+function blank(){ return {lang:null, auto:true,
+  cfg:{en:{level:'A2', per:7, placed:false}, de:{level:'A1', per:7, placed:false}},
+  cards:{}, log:{}, custom:{en:[], de:[]}}; }
+function load(){
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.cards) { const b = blank(); return {...b, ...s, cfg:{...b.cfg, ...s.cfg}, custom:{...b.custom, ...s.custom}}; } } catch(e){}
+  return blank();
+}
+let S = load();
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){ toast('Не удалось сохранить прогресс: память браузера заполнена'); } }
+
+/* фото — в IndexedDB, в памяти держим кэш */
+const PH = {};
+const IDB = {
+  db:null,
+  open(){ return new Promise(res => { try { const r = indexedDB.open('kartochki', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('img');
+    r.onsuccess = () => { this.db = r.result; res(); }; r.onerror = () => res(); } catch(e){ res(); } }); },
+  all(){ return new Promise(res => { if (!this.db) return res(); try {
+    const st = this.db.transaction('img').objectStore('img'); const c = st.openCursor();
+    c.onsuccess = () => { const cur = c.result; if (cur) { PH[cur.key] = cur.value; cur.continue(); } else res(); };
+    c.onerror = () => res(); } catch(e){ res(); } }); },
+  put(k,v){ try { this.db && this.db.transaction('img','readwrite').objectStore('img').put(v,k); } catch(e){} },
+  del(k){ try { this.db && this.db.transaction('img','readwrite').objectStore('img').delete(k); } catch(e){} }
+};
+
+/* ---------- утилиты ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sod = (t = Date.now()) => { const d = new Date(t); d.setHours(0,0,0,0); return d.getTime(); };
+const dk = (t = Date.now()) => { const d = new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const shuffle = a => { a = a.slice(); for (let i = a.length-1; i > 0; i--) { const j = Math.random()*(i+1)|0; [a[i],a[j]] = [a[j],a[i]]; } return a; };
+const ck = (lang,id,dir) => lang+'|'+id+'|'+dir;
+const cfg = () => S.cfg[S.lang];
+const plural = (n, one, few, many) => { const m10 = n%10, m100 = n%100; return n+' '+(m10===1&&m100!==11 ? one : m10>=2&&m10<=4&&(m100<12||m100>14) ? few : many); };
+
+function words(lang = S.lang){
+  return BUILT[lang].concat(S.custom[lang].map(c => ({id:c.w, w:c.w, ru:c.ru, em:c.em||'', ex:c.ex||'', lv:c.list||'Мои слова', custom:true})));
+}
+function findWord(lang, id){ return words(lang).find(w => w.id === id); }
+function customLists(lang = S.lang){ return [...new Set(S.custom[lang].map(c => c.list||'Мои слова'))]; }
+function wstate(lang, id){
+  const f = S.cards[ck(lang,id,'f')], r = S.cards[ck(lang,id,'r')];
+  if (!f && !r) return 'new';
+  return Math.min(f?.b ?? 0, r?.b ?? 0) >= KNOWN ? 'known' : 'learning';
+}
+function dayLog(lang, d = dk()){ S.log[d] ??= {}; return S.log[d][lang] ??= {n:0, r:0, c:0}; }
+function peekLog(d, lang){ return S.log[d]?.[lang] || {n:0, r:0, c:0}; }
+function streak(){
+  let n = 0, t = Date.now();
+  const active = d => ['en','de'].some(l => (S.log[d]?.[l]?.r || 0) > 0);
+  if (!active(dk(t))) t -= DAY;
+  while (active(dk(t))) { n++; t -= DAY; }
+  return n;
+}
+function gender(lang, w){ if (lang !== 'de') return ''; const m = w.match(/^(der|die|das)\s/i); return m ? m[1].toLowerCase() : ''; }
+function fmtWord(lang, w){
+  const g = gender(lang, w);
+  if (!g) return `<span>${esc(w)}</span>`;
+  return `<span class="g-${g}"><span class="art">${g}</span> ${esc(w.slice(4))}</span>`;
+}
+function picHTML(lang, w, cls = 'pic'){
+  const p = PH[lang+'|'+w.id];
+  if (p) return `<div class="${cls}"><img src="${p}" alt=""></div>`;
+  return w.em ? `<div class="${cls}" aria-hidden="true">${w.em}</div>` : '';
+}
+const SPK = '<svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+function sayBtn(lang, text, sm){ return `<button class="say${sm?' sm':''}" data-act="say" data-lang="${lang}" data-t="${esc(text)}" aria-label="Послушать">${SPK}</button>`; }
+function speak(text, lang){
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang === 'en' ? 'en-GB' : 'de-DE';
+    const vs = speechSynthesis.getVoices();
+    const v = vs.find(v => v.lang.replace('_','-') === u.lang) || vs.find(v => v.lang.toLowerCase().startsWith(lang));
+    if (v) u.voice = v;
+    u.rate = .9; speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch(e){}
+}
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+
+/* ---------- интервальное повторение ---------- */
+function grade(k, g){
+  const c = S.cards[k]; if (!c) return;
+  const lang = k.split('|')[0], L = dayLog(lang);
+  L.r++;
+  if (g === 'again') { c.b = 1; c.d = Date.now() + 5*60e3; c.w = (c.w||0)+1; }
+  else if (g === 'hard') { c.b = Math.max(1, c.b); c.d = sod() + Math.max(1, Math.round(INT[c.b]/2))*DAY; L.c++; }
+  else { c.b = Math.min(c.b+1, INT.length-1); c.d = sod() + INT[c.b]*DAY; L.c++; }
+  save();
+  if (g === 'again' && sess) {
+    const n = sess.retries[k] || 0;
+    if (n < 2) { sess.retries[k] = n+1; sess.q.splice(Math.min(sess.q.length, sess.i+4), 0, {t:'card', k}); }
+  } else if (sess) sess.correct++;
+}
+function dueCards(lang = S.lang){
+  const now = Date.now();
+  return Object.entries(S.cards).filter(([k,c]) => k.startsWith(lang+'|') && c.d <= now && findWord(lang, k.split('|')[1])).sort((a,b) => a[1].d - b[1].d).map(([k]) => k);
+}
+function newCandidates(lang = S.lang){
+  const lv = LEVELS[lang], i = lv.indexOf(S.cfg[lang].level);
+  const order = [...customLists(lang), ...lv.slice(i), ...lv.slice(0,i).reverse()];
+  const all = words(lang).filter(w => wstate(lang, w.id) === 'new');
+  return order.flatMap(l => all.filter(w => w.lv === l));
+}
+function newLeft(){ return Math.max(0, cfg().per - peekLog(dk(), S.lang).n); }
+
+let sess = null;
+function startSession(extra){
+  const lang = S.lang;
+  const due = shuffle(dueCards(lang).slice(0, 60)).map(k => ({t:'card', k}));
+  const fresh = newCandidates(lang).slice(0, extra || newLeft());
+  const q = due;
+  let pos = Math.min(q.length, 3);
+  for (const w of fresh) {
+    q.splice(pos, 0, {t:'intro', id:w.id});
+    q.splice(Math.min(q.length, pos+3), 0, {t:'card', k:ck(lang,w.id,'f')});
+    q.push({t:'card', k:ck(lang,w.id,'r')});
+    pos = Math.min(q.length, pos+3);
+  }
+  if (!q.length) return;
+  sess = {q, i:-1, correct:0, fresh:fresh.length, retries:{}, seen:0, finished:false};
+  next();
+}
+function next(){
+  if (!sess) return;
+  sess.i++;
+  while (sess.i < sess.q.length) {
+    const it = sess.q[sess.i];
+    if (it.t === 'intro' || S.cards[it.k]) break;
+    sess.i++;
+  }
+  if (sess.i >= sess.q.length) { sess.finished = true; sess.cur = null; render(); return; }
+  sess.cur = prep(sess.q[sess.i]);
+  render();
+  const c = sess.cur;
+  if (S.auto && (c.t === 'intro' || c.dir === 'f')) speak(c.w.w, S.lang);
+  if (c.mode === 'type') setTimeout(() => $('#ans')?.focus(), 60);
+}
+function prep(it){
+  const lang = S.lang;
+  if (it.t === 'intro') return {t:'intro', w:findWord(lang, it.id)};
+  const [, id, dir] = it.k.split('|');
+  const w = findWord(lang, id), c = S.cards[it.k];
+  const mode = c.b <= 1 ? 'flash' : (dir === 'f' || c.b <= 3) ? 'choice' : 'type';
+  const o = {t:'card', k:it.k, w, dir, mode, flipped:false, picked:null, result:null};
+  if (mode === 'choice') {
+    const shown = x => dir === 'f' ? x.ru : x.w;
+    const pool = shuffle(words(lang).filter(x => x.id !== id && shown(x) !== shown(w)));
+    const same = pool.filter(x => x.lv === w.lv);
+    let ds = [...new Set([...same, ...pool].map(shown))].slice(0, 3);
+    const g = gender(lang, w.w);
+    if (dir === 'r' && g) { const alt = ['der','die','das'].filter(a => a !== g)[Math.random()*2|0] + w.w.slice(3); ds[2] = alt; }
+    o.opts = shuffle([shown(w), ...ds]);
+    o.right = o.opts.indexOf(shown(w));
+  }
+  return o;
+}
+
+/* проверка введённого ответа */
+const norm = s => s.toLowerCase().trim().replace(/[.!?,;:]/g,'').replace(/\s+/g,' ')
+  .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/ё/g,'е');
+function lev(a, b){
+  const m = a.length, n = b.length, d = Array.from({length:m+1}, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 1; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+    d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[m][n];
+}
+const close = (a, b) => a === b || (b.length >= 5 && lev(a, b) <= 1);
+function checkTyped(lang, exp, input){
+  let a = norm(input), e = norm(exp);
+  if (!a) return {r:'bad'};
+  if (lang === 'de') {
+    const m = e.match(/^(der|die|das) (.+)$/);
+    if (m) {
+      const am = a.match(/^(der|die|das) (.+)$/), core = am ? am[2] : a;
+      if (!close(core, m[2])) return {r:'bad'};
+      if (!am) return {r:'hard', msg:"Слово верно, но без артикля."};
+      if (am[1] !== m[1]) return {r:'hard', msg:"Слово верно, а род другой."};
+      if (core !== m[2]) return {r:'hard', msg:'Небольшая опечатка.'};
+      const typedCore = input.trim().split(/\s+/)[1] || '';
+      return {r:'ok', msg: typedCore && typedCore[0] === typedCore[0].toLowerCase() ? 'Подсказка: существительные пишутся с большой буквы' : ''};
+    }
+    e = e.replace(/^sich /,''); a = a.replace(/^sich /,'');
+  } else { e = e.replace(/^to /,''); a = a.replace(/^(to|a|an|the) /,''); }
+  if (a === e) return {r:'ok'};
+  if (close(a, e)) return {r:'hard', msg:'Небольшая опечатка.'};
+  return {r:'bad'};
+}
+
+/* ---------- тест уровня ---------- */
+let test = null;
+function startTest(){
+  const lang = S.lang, lv = LEVELS[lang];
+  test = {lang, cur: lv.indexOf(lang === 'en' ? 'A2' : 'A1'), tested:{}, right:[], n:0};
+  testBlock();
+}
+function testBlock(){
+  const lv = LEVELS[test.lang][test.cur];
+  test.block = shuffle(BUILT[test.lang].filter(w => w.lv === lv)).slice(0, 6);
+  test.bi = 0; test.score = 0;
+  testPrep();
+}
+function testPrep(){
+  const w = test.block[test.bi];
+  const ds = shuffle(BUILT[test.lang].filter(x => x.lv === w.lv && x.id !== w.id)).slice(0, 3).map(x => x.ru);
+  test.q = {w, opts: shuffle([w.ru, ...ds]), picked:null};
+  test.q.right = test.q.opts.indexOf(w.ru);
+  test.n++;
+  render();
+}
+function testAnswer(i){
+  const q = test.q; if (q.picked !== null) return;
+  q.picked = i;
+  if (i === q.right) { test.score++; test.right.push(q.w.id); }
+  render();
+  setTimeout(() => {
+    test.bi++;
+    if (test.bi < test.block.length) return testPrep();
+    const passed = test.score >= 5, lv = LEVELS[test.lang];
+    test.tested[test.cur] = passed;
+    if (passed && test.cur+1 < lv.length && test.tested[test.cur+1] === undefined) { test.cur++; return testBlock(); }
+    if (!passed && test.cur-1 >= 0 && test.tested[test.cur-1] === undefined) { test.cur--; return testBlock(); }
+    finishTest();
+  }, i === q.right ? 450 : 1100);
+}
+function finishTest(){
+  const lv = LEVELS[test.lang];
+  const failed = Object.keys(test.tested).filter(k => !test.tested[k]).map(Number);
+  const level = failed.length ? lv[Math.min(...failed)] : lv[lv.length-1];
+  const C = S.cfg[test.lang]; C.level = level; C.placed = true;
+  for (const id of test.right) for (const d of ['f','r']) {
+    const k = ck(test.lang, id, d);
+    if (!S.cards[k]) S.cards[k] = {b:KNOWN, d: sod() + (7 + Math.random()*21|0)*DAY};
+  }
+  save();
+  test.done = {level, known:test.right.length};
+  render();
+}
+
+/* ---------- загрузка слов списком ---------- */
+function parseList(text){
+  const out = [], bad = [];
+  for (let line of text.split(/\r?\n/)) {
+    line = line.trim();
+    if (!line || line.startsWith('#')) continue;
+    let parts;
+    if (line.includes('\t')) parts = line.split('\t');
+    else if (line.includes(';')) parts = line.split(';');
+    else if (line.includes('|')) parts = line.split('|');
+    else if (/\s[—–-]\s/.test(line)) parts = line.split(/\s[—–-]\s/);
+    else if (line.includes('=')) parts = line.split('=');
+    else if (line.includes(',')) { const i = line.indexOf(','); parts = [line.slice(0,i), line.slice(i+1)]; }
+    else { bad.push(line); continue; }
+    parts = parts.map(s => s.trim().replace(/^"|"$/g,''));
+    const [w, ru, em = '', ex = ''] = parts;
+    if (!w || !ru) { bad.push(line); continue; }
+    out.push({w, ru, em, ex});
+  }
+  return {out, bad};
+}
+function importList(text, list){
+  const lang = S.lang, {out} = parseList(text);
+  const have = new Set(words(lang).map(w => w.id.toLowerCase()));
+  let added = 0, skipped = 0;
+  for (const it of out) {
+    if (have.has(it.w.toLowerCase())) { skipped++; continue; }
+    have.add(it.w.toLowerCase());
+    S.custom[lang].push({...it, list});
+    added++;
+  }
+  save();
+  return {added, skipped};
+}
+
+/* ---------- состояние интерфейса ---------- */
+const ui = {tab:'learn', filter:'all', q:'', sheet:null, confirmReset:false, listText:'', listName:'', photoKey:null};
+
+/* ---------- отрисовка ---------- */
+const ICONS = {
+  learn:'<svg viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="14" rx="2.5"/><path d="M7 3h11.5A2.5 2.5 0 0 1 21 5.5V17"/></svg>',
+  words:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>',
+  stats:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  settings:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>'
+};
+function render(){
+  document.body.dataset.lang = S.lang || 'en';
+  const focus = !S.lang || test || (sess && !sess.finished);
+  const st = streak();
+  $('#top').innerHTML = `
+    <div class="brand"><span class="mark">${S.lang ? S.lang.toUpperCase() : 'Aa'}</span>Карточки</div>
+    ${S.lang && !focus ? `<div class="seg" role="group" aria-label="Язык">
+      <button data-act="lang" data-v="en" class="${S.lang==='en'?'on':''}">EN</button>
+      <button data-act="lang" data-v="de" class="${S.lang==='de'?'on':''}">DE</button></div>` : ''}
+    ${S.lang ? `<div class="streak ${st?'on':''}" title="Дней подряд">🔥 ${st}</div>` : ''}`;
+  $('#tabs').hidden = !!focus;
+  $('#tabs').innerHTML = [['learn','Учить'],['words','Слова'],['stats','Прогресс'],['settings','Настройки']]
+    .map(([k,t]) => `<button data-act="tab" data-v="${k}" class="${ui.tab===k?'on':''}">${ICONS[k]}${t}</button>`).join('');
+  $('#view').innerHTML = viewHTML();
+  renderSheet();
+}
+function viewHTML(){
+  if (!S.lang) return onboardHTML();
+  if (test) return testHTML();
+  if (ui.tab === 'learn') {
+    if (!cfg().placed) return levelPickHTML();
+    if (sess) return sess.finished ? summaryHTML() : itemHTML();
+    return homeHTML();
+  }
+  if (ui.tab === 'words') return wordsHTML();
+  if (ui.tab === 'stats') return statsHTML();
+  return settingsHTML();
+}
+
+function onboardHTML(){
+  return `<div class="panel pop" style="gap:18px">
+    <div><div class="eyebrow">Начнём</div><h1>Какой язык учим?</h1></div>
+    <p class="muted">Каждый язык идёт отдельно, со своими словами и своим прогрессом. Переключиться можно в любой момент.</p>
+    <div class="choice">
+      <button data-act="pickLang" data-v="en"><span class="flag en">EN</span><span><b>English</b><span class="muted small">${BUILT.en.length} слов · уровни A1–B2</span></span></button>
+      <button data-act="pickLang" data-v="de"><span class="flag de">DE</span><span><b>Deutsch</b><span class="muted small">${BUILT.de.length} слов · уровни A1–B1 · артикли по цветам</span></span></button>
+    </div></div>`;
+}
+function levelPickHTML(){
+  const lv = LEVELS[S.lang];
+  return `<div class="panel pop" style="gap:18px">
+    <div><div class="eyebrow">${LANG_NAME[S.lang]}</div><h1>Какой у тебя уровень?</h1></div>
+    <button class="btn primary block" data-act="test">Определить автоматически · 3 минуты</button>
+    <p class="muted small">Тест покажет слова от простых к сложным и подберёт уровень. Слова, которые ты уже знаешь, сразу засчитаются.</p>
+    <div class="set"><label>Или выбери сам</label>
+      <div class="seg">${lv.map(l => `<button data-act="setLevel" data-v="${l}" data-go="1">${l}</button>`).join('')}</div>
+      <p class="muted small">A1 — самые базовые слова, A2 — 6–7 класс, B1 — 8–9 класс, B2 — старшая школа.</p></div></div>`;
+}
+function testHTML(){
+  if (test.done) return `<div class="panel pop" style="gap:18px;text-align:center;align-items:center">
+    <div class="eyebrow">Результат теста</div>
+    <div style="font-family:var(--f-display);font-size:3.2rem;font-weight:700;color:var(--accent)">${test.done.level}</div>
+    <p>Начнём с уровня <b>${test.done.level}</b>. ${test.done.known ? plural(test.done.known,'слово','слова','слов')+' ты уже знаешь, они засчитаны и иногда будут попадаться на проверку.' : ''}</p>
+    <button class="btn primary block" data-act="testDone">Начать учить</button></div>`;
+  const q = test.q;
+  return `<div class="sess-top"><button class="x" data-act="testQuit" aria-label="Прервать тест">✕</button>
+    <div class="bar"><i style="width:${Math.min(100, test.n/18*100)}%"></i></div><span class="cnt">${LEVELS[test.lang][test.cur]}</span></div>
+    <div class="card pop" style="min-height:200px"><div class="tag">Тест · что это значит?</div>
+      <div class="word">${fmtWord(test.lang, q.w.w)}</div></div>
+    <div class="opts">${q.opts.map((o,i) => `<button class="opt ${q.picked!==null && i===q.right?'right':''} ${q.picked===i && i!==q.right?'wrong':''}" data-act="testPick" data-i="${i}" ${q.picked!==null?'disabled':''}>${esc(o)}</button>`).join('')}
+      <button class="btn ghost" data-act="testPick" data-i="-1" ${q.picked!==null?'disabled':''}>Не знаю</button></div>`;
+}
+
+function homeHTML(){
+  const due = dueCards().length, nl = Math.min(newLeft(), newCandidates().length);
+  const mins = Math.max(1, Math.round((due*8 + nl*30) / 60));
+  const tip = TIPS[new Date().getDate() % TIPS.length];
+  const L = peekLog(dk(), S.lang);
+  const total = due + nl;
+  const body = total ? `
+      <div class="stats3"><div><b>${due}</b><span>повторить</span></div><div><b>${nl}</b><span>новых слов</span></div><div><b>~${mins}</b><span>минут</span></div></div>
+      <button class="btn primary block" data-act="start">Начать</button>` : `
+      <p><b>На сегодня всё повторено.</b> ${L.r ? `Ты ответил на ${plural(L.r,'карточку','карточки','карточек')}.` : ''} Следующие слова придут на повторение позже.</p>
+      ${newCandidates().length ? `<button class="btn block" data-act="extra">Взять ещё 5 новых слов</button>` : ''}`;
+  const known = words().filter(w => wstate(S.lang, w.id) === 'known').length;
+  return `<div class="panel pop">
+      <div><div class="eyebrow">${LANG_NAME[S.lang]} · уровень ${cfg().level}</div><h1>Сегодня</h1></div>
+      ${body}</div>
+    <div class="tip"><i>${tip[0]}</i><span>${esc(tip[1])}</span></div>
+    <div class="panel"><div class="lvl-h"><span>Выучено слов</span><b>${known} из ${words().length}</b></div>
+      <div class="stack"><i style="width:${known/words().length*100}%;background:var(--good)"></i></div>
+      <button class="btn sm ghost" data-act="tab" data-v="words">Загрузить свои слова списком →</button></div>`;
+}
+
+function itemHTML(){
+  const c = sess.cur, lang = S.lang, w = c.w;
+  const remaining = sess.q.length - sess.i;
+  const top = `<div class="sess-top"><button class="x" data-act="quit" aria-label="Закончить">✕</button>
+    <div class="bar"><i style="width:${sess.i/sess.q.length*100}%"></i></div><span class="cnt">${remaining}</span></div>`;
+  if (c.t === 'intro') return top + `
+    <div class="card pop"><div class="tag">Новое слово · ${esc(w.lv)}</div>
+      ${picHTML(lang, w)}
+      <div class="word">${fmtWord(lang, w.w)} ${sayBtn(lang, w.w)}</div>
+      <div class="ru">${esc(w.ru)}</div>
+      ${w.ex ? `<div class="divider"></div><div class="ex">${esc(w.ex)} ${sayBtn(lang, w.ex, 1)}</div>` : ''}
+    </div>
+    <div class="row"><button class="btn" data-act="photo" data-id="${esc(w.id)}">📷 ${PH[lang+'|'+w.id] ? 'Другое фото' : 'Своё фото'}</button>
+      <button class="btn primary" data-act="introNext">Запомнил, дальше</button></div>`;
+
+  const askF = c.dir === 'f';
+  const prompt = askF
+    ? `<div class="tag">Что это значит?</div>${picHTML(lang, w)}<div class="word">${fmtWord(lang, w.w)} ${sayBtn(lang, w.w)}</div>`
+    : `<div class="tag">Как это ${LANG_TO[lang]}?</div>${picHTML(lang, w)}<div class="ru">${esc(w.ru)}</div>`;
+  const answer = askF
+    ? `<div class="divider"></div><div class="ru">${esc(w.ru)}</div>`
+    : `<div class="divider"></div><div class="word">${fmtWord(lang, w.w)} ${sayBtn(lang, w.w)}</div>`;
+  const ex = w.ex ? `<div class="ex">${esc(w.ex)} ${sayBtn(lang, w.ex, 1)}</div>` : '';
+
+  if (c.mode === 'flash') {
+    if (!c.flipped) return top + `<div class="card pop">${prompt}</div>
+      <button class="btn primary block" data-act="flip">Показать ответ</button>
+      <p class="muted small" style="text-align:center">Сначала вспомни сам, потом проверь</p>`;
+    return top + `<div class="card">${prompt}${answer}${ex}</div>
+      <div class="grades">
+        <button class="btn gb-again" data-act="rate" data-g="again">Не знал<small>ещё раз</small></button>
+        <button class="btn gb-hard" data-act="rate" data-g="hard">Сомневался<small>скоро</small></button>
+        <button class="btn gb-good" data-act="rate" data-g="good">Знал<small>${plural(INT[Math.min((S.cards[c.k]?.b ?? 0)+1, INT.length-1)],'день','дня','дней')}</small></button></div>`;
+  }
+  if (c.mode === 'choice') {
+    const done = c.picked !== null;
+    return top + `<div class="card pop" style="min-height:220px">${prompt}${done ? ex : ''}</div>
+      <div class="opts">${c.opts.map((o,i) => `<button class="opt ${done && i===c.right?'right':''} ${c.picked===i && i!==c.right?'wrong':''}" data-act="pick" data-i="${i}" ${done?'disabled':''}>${askF ? esc(o) : fmtWord(lang, o)}</button>`).join('')}</div>
+      ${done && c.picked !== c.right ? `<button class="btn primary block" data-act="next">Дальше</button>` : ''}`;
+  }
+  const r = c.result;
+  return top + `<div class="card pop" style="min-height:220px">${prompt}${r ? answer + ex : ''}</div>
+    <form class="set" data-form="type" autocomplete="off">
+      <div class="typed"><input class="input" id="ans" placeholder="${lang==='de' ? 'Напиши слово (с артиклем)' : 'Напиши слово'}" autocapitalize="off" autocorrect="off" spellcheck="false" ${r?'disabled':''} value="${esc(c.typed||'')}">
+      ${r ? '' : `<button class="btn primary">Проверить</button>`}</div>
+      ${lang === 'de' && !r ? `<div class="keys">${['ä','ö','ü','ß'].map(k => `<button type="button" data-act="key" data-k="${k}">${k}</button>`).join('')}</div>` : ''}
+    </form>
+    ${r ? `<div class="fb ${r.r}">${r.r==='ok' ? 'Верно!' : r.r==='hard' ? 'Почти' : 'Неверно'}${r.msg || r.r!=='ok' ? `<span>${esc(r.msg || '')} ${r.r!=='ok' ? 'Правильно: '+esc(w.w) : ''}</span>` : ''}</div>
+      <button class="btn primary block" data-act="next" id="nextBtn">Дальше</button>`
+      : `<button class="btn ghost block" data-act="giveup">Не помню</button>`}`;
+}
+
+function summaryHTML(){
+  const L = peekLog(dk(), S.lang), acc = L.r ? Math.round(L.c/L.r*100) : 0;
+  return `<div class="panel pop" style="gap:18px">
+    <div><div class="eyebrow">Тренировка окончена</div><h1>Отлично, на сегодня готово!</h1></div>
+    <div class="stats3"><div><b>${L.r}</b><span>ответов сегодня</span></div><div><b>${acc}%</b><span>верно</span></div><div><b>🔥 ${streak()}</b><span>дней подряд</span></div></div>
+    <p class="muted">${sess.fresh ? `Новых слов: ${sess.fresh}. Завтра они вернутся на повторение. Так и работает запоминание.` : 'Слова, которые ты сегодня знал, вернутся через несколько дней.'}</p>
+    <button class="btn primary block" data-act="endSess">Готово</button></div>`;
+}
+
+function wordsHTML(){
+  const lang = S.lang, filters = ['all', ...customLists(), ...LEVELS[lang]];
+  return `<div class="row" style="justify-content:space-between"><h1>Слова</h1>
+      <button class="btn sm primary" data-act="openImport">＋ Загрузить список</button></div>
+    <input class="input" id="search" type="search" placeholder="Поиск по слову или переводу" value="${esc(ui.q)}">
+    <div class="chips">${filters.map(f => `<button class="chip ${ui.filter===f?'on':''}" data-act="filter" data-v="${esc(f)}">${f==='all'?'Все':esc(f)}</button>`).join('')}</div>
+    <div class="legend"><span><i style="background:var(--line)"></i>новое</span><span><i style="background:var(--hard)"></i>учу</span><span><i style="background:var(--good)"></i>выучено</span>
+      ${lang==='de' ? `<span class="g-der">der</span><span class="g-die">die</span><span class="g-das">das</span>` : ''}</div>
+    <div id="wlist">${wordListHTML()}</div>`;
+}
+function wordListHTML(){
+  const lang = S.lang, q = ui.q.trim().toLowerCase();
+  const list = words().filter(w => (ui.filter === 'all' || w.lv === ui.filter) && (!q || w.w.toLowerCase().includes(q) || w.ru.toLowerCase().includes(q)));
+  if (!list.length) return `<div class="panel"><p class="muted">Ничего не нашлось. Свои слова можно добавить кнопкой «Загрузить список».</p></div>`;
+  return `<div class="list">${list.map(w => { const p = PH[lang+'|'+w.id];
+    return `<button class="li" data-act="word" data-id="${esc(w.id)}"><span class="em">${p ? `<img src="${p}" alt="">` : (w.em || '')}</span>
+      <span class="t"><b>${fmtWord(lang, w.w)}</b><span>${esc(w.ru)}</span></span><span class="dot ${wstate(lang, w.id)}"></span></button>`; }).join('')}</div>`;
+}
+
+function statsHTML(){
+  const lang = S.lang, groups = [...LEVELS[lang], ...customLists()];
+  const days = Array.from({length:7}, (_, i) => { const t = Date.now() - (6-i)*DAY; return {t, r: peekLog(dk(t), lang).r}; });
+  const max = Math.max(10, ...days.map(d => d.r));
+  const wd = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const all = words(), known = all.filter(w => wstate(lang, w.id) === 'known').length, learning = all.filter(w => wstate(lang, w.id) === 'learning').length;
+  const L = peekLog(dk(), lang);
+  return `<h1>Прогресс</h1>
+    <div class="panel"><div class="stats3"><div><b>🔥 ${streak()}</b><span>дней подряд</span></div><div><b>${known}</b><span>выучено</span></div><div><b>${learning}</b><span>в процессе</span></div></div></div>
+    <div class="panel"><div class="lvl-h"><h2>Ответы за неделю</h2><span class="muted">сегодня ${L.r}${L.r ? ' · '+Math.round(L.c/L.r*100)+'% верно' : ''}</span></div>
+      <div class="week">${days.map((d,i) => `<div class="${i===6?'today':''}"><small>${d.r || ''}</small><span class="b ${d.r?'':'zero'}" style="height:${Math.max(2, d.r/max*90)}px"></span><small>${wd[new Date(d.t).getDay()]}</small></div>`).join('')}</div></div>
+    <div class="panel"><h2>По уровням</h2>
+      ${groups.map(g => { const ws = all.filter(w => w.lv === g); const k = ws.filter(w => wstate(lang,w.id)==='known').length, l = ws.filter(w => wstate(lang,w.id)==='learning').length;
+        return `<div class="lvl"><div class="lvl-h"><span><b>${esc(g)}</b>${g===cfg().level?' · текущий':''}</span><span class="muted">${k} / ${ws.length}</span></div>
+          <div class="stack"><i style="width:${k/ws.length*100}%;background:var(--good)"></i><i style="width:${l/ws.length*100}%;background:var(--hard)"></i></div></div>`; }).join('')}
+      <div class="legend"><span><i style="background:var(--good)"></i>выучено (повторено 5+ раз с растущим интервалом)</span><span><i style="background:var(--hard)"></i>учу</span></div></div>`;
+}
+
+function settingsHTML(){
+  const C = cfg(), inFrame = window.top !== window.self;
+  return `<h1>Настройки</h1>
+    <div class="panel">
+      <div class="set"><label>Язык</label><div class="seg"><button data-act="lang" data-v="en" class="${S.lang==='en'?'on':''}">English</button><button data-act="lang" data-v="de" class="${S.lang==='de'?'on':''}">Deutsch</button></div></div>
+      <div class="set"><label>Уровень</label><div class="seg">${LEVELS[S.lang].map(l => `<button data-act="setLevel" data-v="${l}" class="${C.level===l?'on':''}">${l}</button>`).join('')}</div>
+        <button class="btn sm" data-act="test" style="align-self:flex-start">Пройти тест уровня заново</button></div>
+      <div class="set"><label>Новых слов в день</label><div class="seg">${[3,5,7,10,15].map(n => `<button data-act="setPer" data-v="${n}" class="${C.per===n?'on':''}">${n}</button>`).join('')}</div>
+        <p class="muted small">Для 14 лет оптимально 5–10. Больше — и повторений через неделю станет слишком много.</p></div>
+      <div class="toggle"><label for="auto">Озвучивать слово автоматически</label><input type="checkbox" class="sw" id="auto" data-act="auto" ${S.auto?'checked':''}></div>
+    </div>
+    <div class="panel"><h2>Резервная копия прогресса</h2>
+      <p class="muted small">Прогресс хранится только на этом телефоне. Сохраняй копию раз в месяц или перед сменой телефона. Фото в копию не входят.</p>
+      <div class="row"><button class="btn sm" data-act="copyExport">Скопировать копию</button>${inFrame ? '' : `<button class="btn sm" data-act="dlExport">Сохранить файлом</button>`}<button class="btn sm" data-act="pickImport">Загрузить из файла</button></div>
+      <textarea class="input" id="exp" readonly hidden></textarea>
+      <textarea class="input" id="imp" placeholder="…или вставь сюда скопированную копию"></textarea>
+      <button class="btn sm" data-act="pasteImport" style="align-self:flex-start">Восстановить из текста</button></div>
+    <div class="panel"><h2>Сброс</h2>
+      ${ui.confirmReset ? `<p>Удалить весь прогресс по ${S.lang==='en'?'английскому':'немецкому'}? Отменить это нельзя.</p>
+        <div class="row"><button class="btn danger" data-act="reset">Да, удалить</button><button class="btn" data-act="cancelReset">Отмена</button></div>`
+        : `<button class="btn danger sm" data-act="askReset" style="align-self:flex-start">Сбросить прогресс по ${S.lang==='en'?'английскому':'немецкому'}</button>`}</div>`;
+}
+
+function renderSheet(){
+  const el = $('#sheet');
+  if (!ui.sheet) { el.innerHTML = ''; return; }
+  const lang = S.lang;
+  let body = '';
+  if (ui.sheet.t === 'word') {
+    const w = findWord(lang, ui.sheet.id); if (!w) { ui.sheet = null; el.innerHTML = ''; return; }
+    const f = S.cards[ck(lang,w.id,'f')], r = S.cards[ck(lang,w.id,'r')];
+    const nextD = [f,r].filter(Boolean).map(c => c.d).sort((a,b) => a-b)[0];
+    const st = wstate(lang, w.id);
+    const when = nextD ? (nextD <= Date.now() ? 'повторить сегодня' : 'повтор через ' + plural(Math.ceil((nextD - Date.now())/DAY),'день','дня','дней')) : 'ещё не начато';
+    const hasP = !!PH[lang+'|'+w.id];
+    body = `<div class="card" style="min-height:0">${picHTML(lang, w)}
+        <div class="word">${fmtWord(lang, w.w)} ${sayBtn(lang, w.w)}</div><div class="ru">${esc(w.ru)}</div>
+        ${w.ex ? `<div class="ex">${esc(w.ex)} ${sayBtn(lang, w.ex, 1)}</div>` : ''}
+        <div class="tag">${esc(w.lv)} · ${st==='known'?'выучено':st==='learning'?'учу':'новое'} · ${when}</div></div>
+      <div class="row"><button class="btn" data-act="photo" data-id="${esc(w.id)}">📷 ${hasP?'Заменить фото':'Добавить своё фото'}</button>
+        ${hasP ? `<button class="btn" data-act="delPhoto" data-id="${esc(w.id)}">Убрать фото</button>` : ''}</div>
+      ${w.custom ? `<button class="btn danger" data-act="delWord" data-id="${esc(w.id)}">Удалить слово</button>` : ''}
+      <button class="btn ghost" data-act="close">Закрыть</button>`;
+  } else {
+    const p = parseList(ui.listText);
+    const lists = customLists();
+    body = `<div><div class="eyebrow">${LANG_NAME[lang]}</div><h2>Загрузить слова списком</h2></div>
+      <p class="small muted">Одна строка — одно слово. Сначала ${lang==='de'?'немецкое слово (существительные с артиклем)':'английское слово'}, потом перевод. Разделитель: <code>;</code> <code>—</code> <code>=</code> <code>|</code> или табуляция (можно скопировать из Excel). Третьим полем можно добавить эмодзи.</p>
+      <textarea class="input" id="listText" rows="7" placeholder="${lang==='de' ? 'der Hund — собака\ndie Katze ; кошка ; 🐈\nlaufen = бегать' : 'dog — собака\ncat ; кошка ; 🐈\nrun = бегать'}">${esc(ui.listText)}</textarea>
+      <div class="row"><button class="btn sm" data-act="pickListFile">Выбрать файл .txt / .csv</button></div>
+      <div class="set"><label for="listName">Название набора</label>
+        <input class="input" id="listName" list="lists" placeholder="Например: Unit 3 или Контрольная 12.11" value="${esc(ui.listName)}">
+        <datalist id="lists">${lists.map(l => `<option value="${esc(l)}">`).join('')}</datalist></div>
+      <div id="listPreview">${listPreviewHTML(p)}</div>
+      <button class="btn primary" data-act="doImport" id="doImport" ${p.out.length?'':'disabled'}>Добавить ${p.out.length ? plural(p.out.length,'слово','слова','слов') : ''}</button>
+      <button class="btn ghost" data-act="close">Отмена</button>`;
+  }
+  el.innerHTML = `<div class="sheet-bg" data-act="bgClose"><div class="sheet pop" role="dialog" aria-modal="true">${body}</div></div>`;
+}
+function listPreviewHTML(p){
+  if (!p.out.length && !p.bad.length) return '';
+  return `<div class="panel" style="padding:12px 14px;gap:8px"><div class="small"><b>Распознано: ${p.out.length}</b>${p.bad.length ? ` · <span style="color:var(--bad)">не понял строк: ${p.bad.length}</span>` : ''}</div>
+    <div class="preview">${p.out.slice(0, 30).map(it => `<div><span>${esc(it.em)}</span><b>${fmtWord(S.lang, it.w)}</b><span class="muted">— ${esc(it.ru)}</span></div>`).join('')}
+    ${p.out.length > 30 ? `<div class="muted">…и ещё ${p.out.length-30}</div>` : ''}
+    ${p.bad.slice(0,5).map(b => `<div style="color:var(--bad)">✕ ${esc(b)}</div>`).join('')}</div></div>`;
+}
+
+/* ---------- действия ---------- */
+function exportText(){ return JSON.stringify({app:'kartochki', v:1, ...S}); }
+function restore(text){
+  try {
+    const d = JSON.parse(text);
+    if (d.app !== 'kartochki' || !d.cards) throw 0;
+    delete d.app; delete d.v;
+    const b = blank(); S = {...b, ...d, cfg:{...b.cfg, ...d.cfg}, custom:{...b.custom, ...d.custom}};
+    save(); sess = null; render(); toast('Прогресс восстановлен');
+  } catch(e){ toast('Это не похоже на копию прогресса. Проверь, что вставлен весь текст.'); }
+}
+const ACT = {
+  tab(d){ ui.tab = d.v; ui.confirmReset = false; render(); $('#view').scrollTop = 0; },
+  lang(d){ S.lang = d.v; save(); sess = null; ui.filter = 'all'; render(); },
+  pickLang(d){ S.lang = d.v; save(); ui.tab = 'learn'; render(); },
+  setLevel(d){ cfg().level = d.v; cfg().placed = true; save(); if (d.go) ui.tab = 'learn'; render(); },
+  setPer(d){ cfg().per = +d.v; save(); render(); },
+  auto(d, el){ S.auto = el.checked; save(); },
+  test(){ sess = null; startTest(); },
+  testPick(d){ testAnswer(+d.i); },
+  testQuit(){ test = null; render(); },
+  testDone(){ test = null; ui.tab = 'learn'; render(); },
+  start(){ startSession(); },
+  extra(){ startSession(5); },
+  quit(){ sess = null; render(); },
+  endSess(){ sess = null; render(); },
+  say(d){ speak(d.t, d.lang); },
+  introNext(){
+    const w = sess.cur.w, now = Date.now();
+    for (const dir of ['f','r']) { const k = ck(S.lang, w.id, dir); if (!S.cards[k]) S.cards[k] = {b:0, d:now}; }
+    dayLog(S.lang).n++; save(); next();
+  },
+  flip(){ sess.cur.flipped = true; render(); if (S.auto && sess.cur.dir === 'r') speak(sess.cur.w.w, S.lang); },
+  rate(d){ grade(sess.cur.k, d.g); next(); },
+  pick(d){
+    const c = sess.cur; if (c.picked !== null) return;
+    c.picked = +d.i; const ok = c.picked === c.right;
+    grade(c.k, ok ? 'good' : 'again'); render();
+    if (c.dir === 'r' && S.auto) speak(c.w.w, S.lang);
+    if (ok) setTimeout(() => { if (sess && sess.cur === c) next(); }, 700);
+  },
+  key(d){ const i = $('#ans'); if (!i) return; const s = i.selectionStart ?? i.value.length; i.value = i.value.slice(0,s) + d.k + i.value.slice(i.selectionEnd ?? s); i.focus(); i.setSelectionRange(s+1, s+1); },
+  giveup(){ const c = sess.cur; c.result = {r:'bad'}; grade(c.k, 'again'); render(); if (S.auto) speak(c.w.w, S.lang); },
+  next(){ next(); },
+  filter(d){ ui.filter = d.v; render(); },
+  word(d){ ui.sheet = {t:'word', id:d.id}; renderSheet(); },
+  openImport(){ ui.sheet = {t:'import'}; ui.listName ||= 'Мои слова'; renderSheet(); setTimeout(() => $('#listText')?.focus(), 50); },
+  close(){ ui.sheet = null; renderSheet(); },
+  bgClose(d, el, e){ if (e.target === el) ACT.close(); },
+  pickListFile(){ $('#list-file').click(); },
+  doImport(){
+    const name = ($('#listName')?.value || '').trim() || 'Мои слова';
+    const {added, skipped} = importList(ui.listText, name);
+    ui.listText = ''; ui.listName = name; ui.sheet = null; ui.filter = name;
+    render();
+    toast(`Добавлено: ${added}${skipped ? ` · уже были: ${skipped}` : ''}. Они придут первыми в новых словах.`);
+  },
+  photo(d){ ui.photoKey = S.lang+'|'+d.id; $('#photo-input').click(); },
+  delPhoto(d){ const k = S.lang+'|'+d.id; delete PH[k]; IDB.del(k); render(); },
+  delWord(d){
+    S.custom[S.lang] = S.custom[S.lang].filter(c => c.w !== d.id);
+    for (const dir of ['f','r']) delete S.cards[ck(S.lang, d.id, dir)];
+    save(); ui.sheet = null; if (!customLists().includes(ui.filter) && !LEVELS[S.lang].includes(ui.filter)) ui.filter = 'all'; render();
+  },
+  copyExport(){
+    const t = exportText();
+    navigator.clipboard.writeText(t).then(() => toast('Копия скопирована. Сохрани её в заметки или отправь себе.'), () => {
+      const ta = $('#exp'); ta.hidden = false; ta.value = t; ta.focus(); ta.select(); toast('Выдели текст и скопируй вручную');
+    });
+  },
+  dlExport(){
+    try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([exportText()], {type:'application/json'})); a.download = 'kartochki-'+dk()+'.json'; a.click(); } catch(e){ ACT.copyExport(); }
+  },
+  pickImport(){ $('#import-file').click(); },
+  pasteImport(){ const t = $('#imp').value.trim(); if (t) restore(t); },
+  askReset(){ ui.confirmReset = true; render(); },
+  cancelReset(){ ui.confirmReset = false; render(); },
+  reset(){
+    for (const k of Object.keys(S.cards)) if (k.startsWith(S.lang+'|')) delete S.cards[k];
+    for (const d of Object.keys(S.log)) delete S.log[d][S.lang];
+    S.cfg[S.lang].placed = false; ui.confirmReset = false; save(); render(); toast('Прогресс сброшен');
+  }
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = ACT[el.dataset.act]; if (!fn) return;
+  if (el.type === 'checkbox') { fn(el.dataset, el, e); return; }
+  fn(el.dataset, el, e);
+});
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.dataset.form === 'type' && sess?.cur && !sess.cur.result) {
+    const c = sess.cur, val = $('#ans').value;
+    if (!val.trim()) return;
+    c.typed = val; c.result = checkTyped(S.lang, c.w.w, val);
+    grade(c.k, c.result.r === 'ok' ? 'good' : c.result.r === 'hard' ? 'hard' : 'again');
+    render(); if (S.auto) speak(c.w.w, S.lang);
+    setTimeout(() => $('#nextBtn')?.focus(), 30);
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'search') { ui.q = e.target.value; $('#wlist').innerHTML = wordListHTML(); }
+  if (e.target.id === 'listText') {
+    ui.listText = e.target.value; const p = parseList(ui.listText);
+    $('#listPreview').innerHTML = listPreviewHTML(p);
+    const b = $('#doImport'); b.disabled = !p.out.length; b.textContent = 'Добавить ' + (p.out.length ? plural(p.out.length,'слово','слова','слов') : '');
+  }
+  if (e.target.id === 'listName') ui.listName = e.target.value;
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && ui.sheet) ACT.close();
+  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT' && sess?.cur) {
+    if (sess.cur.mode === 'flash' && !sess.cur.flipped) { e.preventDefault(); ACT.flip(); }
+  }
+});
+$('#list-file').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { ui.listText = String(r.result); if (!ui.listName || ui.listName === 'Мои слова') ui.listName = f.name.replace(/\.[^.]+$/, ''); renderSheet(); };
+  r.readAsText(f); e.target.value = '';
+});
+$('#import-file').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => restore(String(r.result)); r.readAsText(f); e.target.value = '';
+});
+$('#photo-input').addEventListener('change', e => {
+  const f = e.target.files[0], key = ui.photoKey; e.target.value = '';
+  if (!f || !key) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => {
+    const s = 320, side = Math.min(img.width, img.height), cv = document.createElement('canvas');
+    cv.width = cv.height = s;
+    cv.getContext('2d').drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, s, s);
+    const data = cv.toDataURL('image/jpeg', .78);
+    PH[key] = data; IDB.put(key, data); URL.revokeObjectURL(url); render(); toast('Фото добавлено к слову');
+  };
+  img.onerror = () => toast('Не получилось открыть это изображение');
+  img.src = url;
+});
+
+/* ---------- запуск ---------- */
+(async function boot(){
+  render();
+  await IDB.open(); await IDB.all(); render();
+  try { navigator.storage?.persist?.(); } catch(e){}
+  try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch(e){}
+  if (document.querySelector('link[rel="manifest"]') && 'serviceWorker' in navigator && location.protocol.startsWith('http'))
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+
+</body>
+</html>
